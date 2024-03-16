@@ -39,7 +39,6 @@ class DB_interface:
           db_user = os.getenv('DB_USER')
           db_password = os.getenv('DB_PASSWORD')
           db_type = os.getenv('DB_TYPE')
-          db_container_name = os.getenv('DB_CONTAINER_NAME')
           
           self.db_url = ''
 
@@ -66,7 +65,7 @@ class DB_interface:
           table_class = TABLE_CLASS_MAP.get(table_name.lower())
 
           if table_class:
-               row = table_class(**row_info)
+               row = table_class(row_info)
                print(row)
                self.session.add(row)
                self.session.commit()
