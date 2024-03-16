@@ -7,4 +7,11 @@ class Example(Base):
 
     Id = Column(Integer, primary_key=True)
     Information = Column(String(120), nullable=False)
-    Level_id = Column(Integer, ForeignKey('levels.Id'))
+    Level_id = Column(ForeignKey('levels.Id'))
+
+    def serialize(self):
+        return {
+            "id": self.Id,
+            "information": self.Information,
+            "level_id": self.Level_id
+        }
