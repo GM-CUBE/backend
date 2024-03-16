@@ -1,8 +1,8 @@
-import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import os
 
 from .activity import Activity
 from .clash import Clash
@@ -16,88 +16,112 @@ from .shortcut import Shortcuts
 from .user import Users
 from .level import Level
 
-
-engine = create_engine('postgresql://postgres:1234@localhost/GM_CUBE', echo=False)
-Session = sessionmaker(bind=engine)
-session = Session()
-
+from .base import Base
 
 TABLE_CLASS_MAP = {
-    'activity': Activity,
-    'clash': Clash,
-    'example': Example,
-    'game_question': Game_Question,
-    'games': Games,
-    'level': Level,
-    'paragraph': Paragraph,
-    'questions': Questions,
-    'shortcut_game': Shortcut_Game,
-    'shortcuts': Shortcuts,
-    'user': Users
+     'activity': Activity,
+     'clash': Clash,
+     'example': Example,
+     'game_question': Game_Question,
+     'games': Games,
+     'level': Level,
+     'paragraph': Paragraph,
+     'questions': Questions,
+     'shortcut_game': Shortcut_Game,
+     'shortcuts': Shortcuts,
+     'user': Users
 }
 
+class DB_interface:
+     def __init__(self) -> None:
+          db_url = os.getenv('DB_URL')
+          db_name = os.getenv('DB_NAME')
+          db_user = os.getenv('DB_USER')
+          db_password = os.getenv('DB_PASSWORD')
+          db_type = os.getenv('DB_TYPE')
+          db_container_name = os.getenv('DB_CONTAINER_NAME')
+          
+          self.db_url = ''
 
-# --- Create -----------
-def crate_table_row(table_name, row_info):
-     table_class = TABLE_CLASS_MAP.get(table_name.lower())
-
-     if table_class:
-          row = table_class(**row_info)
-          print(row)
-          session.add(row)
-          session.commit()
-
-     else:
-          print(f"No se encontró una clase correspondiente a la tabla {table_name}")
-     
-
-
-# --- Read -------------
-def read_all_table(table_name):
-     table_class = TABLE_CLASS_MAP.get(table_name.lower())
-
-     if table_class:
-          result = []
-          data = session.query(table_class).all()
-          for i in data:
-               result.append(i.serialize())
-
-          return result
+          if db_url != '':
+               self.db_url = db_url
+          else:
+               if db_type == '0':
+                    self.db_url = f"postgresql://{db_user}:{db_password}@localhost/{db_name}"
+               elif db_type == '1':
+                    self.db_url = f"postgresql+psycopg2://{db_user}:{db_password}@localhost/{db_name}"
 
 
+          self.engine = create_engine(self.db_url, echo=False)
 
-def read_by_id(table_name, id):
-     table_class = TABLE_CLASS_MAP.get(table_name.lower())
+          Session = sessionmaker(bind=self.engine)
+          
+          self.session = Session()
 
-     if table_class:
-          data = session.query(table_class).filter(table_class.Id == id).first()
-          return data.serialize()
-
-
-
-# --- Update -----------
-def update_table_row(table_name, id, row_info):
-     table_class = TABLE_CLASS_MAP.get(table_name.lower())
-
-     if table_class:
-          data = session.query(table_class).filter(table_class.Id == id).first()
-
-          for key, value in row_info.items():
-               setattr(data, key, value)
-          session.commit()
+          Base.metadata.create_all(self.engine)
 
 
-# --- Delete -----------
-def delete_table_row(table_name, id):
-     table_class = TABLE_CLASS_MAP.get(table_name.lower())
+     # --- Create -----------
+     def crate_table_row(self, table_name, row_info):
+          table_class = TABLE_CLASS_MAP.get(table_name.lower())
 
-     if table_class:
-          try: 
-               data = session.query(table_class).filter(table_class.Id == id).first()
-               session.delete(data)
-               session.commit()
-          except:
-               print('Not found')
+          if table_class:
+               row = table_class(**row_info)
+               print(row)
+               self.session.add(row)
+               self.session.commit()
+
+          else:
+               print(f"No se encontró una clase correspondiente a la tabla {table_name}")
+          
+
+
+     # --- Read -------------
+     def read_all_table(self, table_name):
+          table_class = TABLE_CLASS_MAP.get(table_name.lower())
+
+          if table_class:
+               result = []
+               data = self.session.query(table_class).all()
+               for i in data:
+                    result.append(i.serialize())
+
+               return result
+
+
+
+     def read_by_id(self, table_name, id):
+          table_class = TABLE_CLASS_MAP.get(table_name.lower())
+
+          if table_class:
+               data = self.session.query(table_class).filter(table_class.Id == id).first()
+               return data.serialize()
+
+
+
+     # --- Update -----------
+     def update_table_row(self, table_name, id, row_info):
+          table_class = TABLE_CLASS_MAP.get(table_name.lower())
+
+          if table_class:
+               data = self.session.query(table_class).filter(table_class.Id == id).first()
+
+               for key, value in row_info.items():
+                    setattr(data, key, value)
+               self.session.commit()
+
+
+     # --- Delete -----------
+     def delete_table_row(self, table_name, id):
+          table_class = TABLE_CLASS_MAP.get(table_name.lower())
+
+          if table_class:
+               try: 
+                    data = self.session.query(table_class).filter(table_class.Id == id).first()
+                    self.session.delete(data)
+                    self.session.commit()
+               except:
+                    print('Not found')
 
 
 

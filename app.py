@@ -5,8 +5,7 @@ from dotenv import load_dotenv
 import os
 
 from my_lib.general import crud_template, is_none
-# import my_lib.database
-from my_lib.database import crate_table_row, read_all_table, update_table_row, delete_table_row
+from my_lib.database import DB_interface
 
 # -----------------------------------------------------------------------------
 
@@ -15,6 +14,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 JWTManager(app)
+database = DB_interface()
 
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
