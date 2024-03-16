@@ -7,7 +7,7 @@ from .paragraph import Paragraph
 from .question import Questions
 from .shortcut_game import Shortcut_Game
 from .shortcut import Shortcuts
-from .user import Users
+from .user import User
 from .level import Level
 
 from .crud import DB_interface

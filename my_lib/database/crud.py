@@ -13,7 +13,7 @@ from .paragraph import Paragraph
 from .question import Questions
 from .shortcut_game import Shortcut_Game
 from .shortcut import Shortcuts
-from .user import Users
+from .user import User
 from .level import Level
 
 from .base import Base
@@ -29,7 +29,7 @@ TABLE_CLASS_MAP = {
      'questions': Questions,
      'shortcut_game': Shortcut_Game,
      'shortcuts': Shortcuts,
-     'user': Users
+     'user': User
 }
 
 class DB_interface:
@@ -122,7 +122,12 @@ class DB_interface:
                except:
                     print('Not found')
 
+     def try_login(self, username, password) -> tuple[bool, User]:
+          user = self.session.query(User).filter(User.Username == username).filter(User.Password == password).first()
 
-
+          if user != None:
+               return True, user
+          else:
+               return False, user
 
 # crate_Table('level', **{'Name': 'Bronce', 'MinimumPrestige': 0, 'MaximumPrestige': 100})

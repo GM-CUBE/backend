@@ -42,28 +42,27 @@ def signup():
     }), 200
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 @crud_template(request, ['username', 'password'])
 def login():
 
     username = request.json['Username']
     password = request.json['Password']
 
-    user = ClaseDB.SearchUser(username, password)
-    #todo JWT
+    success, user = DB_interface.try_login(username, password)
 
-    if user != None:
+    token = create_access_token(identity=username)
 
+    if success:
         return jsonify({
-            "message": "Encontrado",
-            "user": user
+            "message": "Correct",
+            "user": user,
+            "token": token
         }), 200
-    
+        
     else:
-
         return jsonify({
-            "message": "Datos incorrectos",
-            "user": None
+            "message": "Incorrect Credentials",
         }), 401
 
 
