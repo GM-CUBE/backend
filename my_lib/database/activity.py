@@ -1,13 +1,5 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-
-engine = create_engine('postgresql://', echo=False)
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, ForeignKey
+from .base import Base
 
 
 class Activity(Base):
@@ -15,8 +7,4 @@ class Activity(Base):
 
     Id = Column(Integer, primary_key=True)
     Level_id = Column(Integer, ForeignKey('levels.Id'))
-    Questions = 
-
-
-
-Base.metadata.create_all(engine)
+    Questions = Column(Integer, ForeignKey('questions.Id'))

@@ -1,13 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
-
-
-engine = create_engine('postgresql://', echo=False)
-Base = declarative_base()
-
-Session = sessionmaker(bind=engine)
-session = Session()
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+from .base import Base
 
 
 class Level(Base):
@@ -22,6 +15,3 @@ class Level(Base):
     Examples = relationship('Example', backref='level')
     Activities = relationship('Activity', backref='level')
     Clashes = relationship('Clash', backref='level')
-
-
-Base.metadata.create_all(engine)

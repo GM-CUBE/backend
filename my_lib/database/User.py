@@ -1,14 +1,5 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, TIMESTAMP
-
-engine = create_engine('postgresql://<nombre>:@localhost/<basededatos>')
-
-Base = declarative_base()
-
-Session = sessionmaker(engine)
-session = Session()
+from .base import Base
 
 class Users(Base):
     __tablename__ = 'users'
@@ -23,9 +14,4 @@ class Users(Base):
     EmailVerification = Column(TIMESTAMP(), nullable=False)
     Prestige = Column(Integer(), nullable=False)
     Coins = Column(Integer(), nullable=False)
-    Strak = Column(Integer(), nullable=False)
-
-if __name__ == '__main__':
-    
-    # Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
+    Streak = Column(Integer(), nullable=False)

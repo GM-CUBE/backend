@@ -1,13 +1,5 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-
-engine = create_engine('postgresql://', echo=False)
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, ForeignKey
+from .base import Base
 
 
 class Example(Base):
@@ -16,7 +8,3 @@ class Example(Base):
     Id = Column(Integer, primary_key=True)
     Information = Column(String(120), nullable=False)
     Level_id = Column(Integer, ForeignKey('levels.Id'))
-
-
-
-Base.metadata.create_all(engine)
