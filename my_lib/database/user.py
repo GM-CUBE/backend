@@ -11,7 +11,7 @@ class Users(Base):
     Username = Column(String(15), nullable=False, unique=True)
     Password = Column(String(50), nullable=False)
     Email = Column(String(50), nullable=False, unique=True)
-    EmailVerification = Column(TIMESTAMP(), nullable=False)
+    EmailVerification = Column(TIMESTAMP())
     Prestige = Column(Integer(), nullable=False)
     Coins = Column(Integer(), nullable=False)
     Streak = Column(Integer(), nullable=False)
