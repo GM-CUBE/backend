@@ -50,7 +50,7 @@ class DB_interface:
                elif db_type == '1':
                     self.db_url = f"postgresql+psycopg2://{db_user}:{db_password}@localhost/{db_name}"
 
-
+          print(self.db_url)
           self.engine = create_engine(self.db_url, echo=False)
 
           Session = sessionmaker(bind=self.engine)
@@ -65,13 +65,18 @@ class DB_interface:
           table_class = TABLE_CLASS_MAP.get(table_name.lower())
 
           if table_class:
-               row = table_class(row_info)
+               row = table_class(**row_info)
                print(row)
                self.session.add(row)
                self.session.commit()
 
+               return True
+
           else:
                print(f"No se encontró una clase correspondiente a la tabla {table_name}")
+
+          
+          return False
           
 
 

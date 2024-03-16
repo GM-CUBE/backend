@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, TIMESTAMP
 from .base import Base
 
+import datetime
+
 class Users(Base):
     __tablename__ = 'users'
 
@@ -10,12 +12,10 @@ class Users(Base):
     Age = Column(Integer(), nullable=False)
     Username = Column(String(15), nullable=False, unique=True)
     Password = Column(String(50), nullable=False)
-    Email = Column(String(50), nullable=False, unique=True)
-    EmailVerification = Column(TIMESTAMP())
-    Prestige = Column(Integer(), nullable=False)
-    Coins = Column(Integer(), nullable=False)
-    Streak = Column(Integer(), nullable=False)
-    CreatedDate = Column(TIMESTAMP(), nullable=False)
+    Prestige = Column(Integer(), nullable=False, default=0)
+    Coins = Column(Integer(), nullable=False, default=0)
+    Streak = Column(Integer(), nullable=False, default=0)
+    CreatedDate = Column(TIMESTAMP(), nullable=False, default=datetime.datetime.now)
 
     def serialize(self):
         return {
@@ -24,8 +24,6 @@ class Users(Base):
             "lastName": self.LastName,
             "age": self.Age,
             "username": self.Username,
-            "email": self.Email,
-            "emailVerification" : self.EmailVerification,
             "prestige": self.Prestige,
             "coins": self.Coins,
             "streak": self.Streak,
