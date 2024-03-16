@@ -15,3 +15,19 @@ class Users(Base):
     Prestige = Column(Integer(), nullable=False)
     Coins = Column(Integer(), nullable=False)
     Streak = Column(Integer(), nullable=False)
+    CreatedDate = Column(TIMESTAMP(), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.Id,
+            "firstName": self.FirstName,
+            "lastName": self.LastName,
+            "age": self.Age,
+            "username": self.Username,
+            "email": self.Email,
+            "emailVerification" : self.EmailVerification,
+            "prestige": self.Prestige,
+            "coins": self.Coins,
+            "streak": self.Streak,
+            "createdDate": self.CreatedDate
+        }

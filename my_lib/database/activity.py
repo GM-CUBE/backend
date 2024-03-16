@@ -7,4 +7,11 @@ class Activity(Base):
 
     Id = Column(Integer, primary_key=True)
     Level_id = Column(Integer, ForeignKey('levels.Id'))
-    Questions = Column(Integer, ForeignKey('questions.Id'))
+    Questions = Column(ForeignKey('questions.Id'))
+
+    def serialize(self):
+        return {
+            "id": self.Id,
+            "level_id": self.Level_id,
+            "questions": self.Questions
+        }
