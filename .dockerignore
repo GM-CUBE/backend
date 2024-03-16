@@ -1,0 +1,9 @@
+.vscode
+
+.venv
+
+.env
+.env.example
+
+.git
+.gitignore

@@ -1,12 +1,7 @@
-FROM postgres:latest
+FROM postgres:16-alpine
 
-# Set environment variables
-ENV POSTGRES_DB=mydatabase
-ENV POSTGRES_USER=myuser
-ENV POSTGRES_PASSWORD=mypassword
+ENV POSTGRES_DB=gmcube
+ENV POSTGRES_USER=admin
+ENV POSTGRES_PASSWORD=1234
 
-# Copy custom initialization scripts to the container
-COPY init.sql /docker-entrypoint-initdb.d/
-
-# Expose PostgreSQL port
 EXPOSE 5432
