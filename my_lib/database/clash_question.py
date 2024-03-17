@@ -5,7 +5,7 @@ class Clash_Question(Base):
     __tablename__ = 'clash_questions'
 
     Clash_Id = Column(ForeignKey("clash.Id"), primary_key=True)
-    Question_Id = Column(ForeignKey("question.Id"))
+    Question_Id = Column(ForeignKey("questions.Id"))
 
     def serialize(self):
         return {
