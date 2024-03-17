@@ -35,17 +35,17 @@ def prueba_post(_id=None):
 
 ```python
 TABLE_CLASS_MAP = {
-     'activity': Activity,
-     'clash': Clash,
-     'example': Example,
-     'game_question': Game_Question,
-     'games': Games,
-     'level': Level,
-     'paragraph': Paragraph,
-     'questions': Questions,
-     'shortcut_game': Shortcut_Game,
-     'shortcuts': Shortcuts,
-     'user': Users
-     'queue': Queue
+    'clash': Clash,
+    'example': Example,
+    'game_question': Game_Question,
+    'games': Games,
+    'level': Level,
+    'paragraph': Paragraph,
+    'questions': Questions,
+    'shortcut_game': Shortcut_Game,
+    'shortcuts': Shortcuts,
+    'user': User,
+    'queue': Queue,
+    'clash_questions': Clash_Question
 }
 ```

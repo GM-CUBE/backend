@@ -120,6 +120,15 @@ class DB_interface:
 
           return data     
 
+     
+     def read_all_by_foreign_key(self, table_name, column_name, id):
+          table_class = TABLE_CLASS_MAP.get(table_name.lower())
+
+          if table_class:
+               data = self.session.query(table_class).filter_by(column_name = id)
+
+               return data if len(data) > 0 else []
+
 
      # --- Update -----------
      def update_table_row(self, table_name, id, row_info):
@@ -155,9 +164,9 @@ class DB_interface:
           user = self.session.query(User).filter(User.Username == username).filter(User.Password == password).first()
 
           if user != None:
-               return True, user.serialize()
+               return True, user
           else:
-               return False, user.serialize()
+               return False, user
 
 
      def exist_user(self, username) -> bool:

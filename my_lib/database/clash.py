@@ -6,8 +6,8 @@ class Clash(Base):
     __tablename__ = 'clashes'
 
     Id = Column(Integer, primary_key=True)
-    TotalTime = Column(Integer(), nullable=True)
     StartTime = Column(TIMESTAMP(), default=datetime.now())
+    EndTime = Column(TIMESTAMP(), nullable=True)
     Result = Column(Boolean(), nullable=True)
     Level_id = Column(ForeignKey('levels.Id'))
     Game1_id = Column(ForeignKey('users.Id'))
@@ -16,8 +16,8 @@ class Clash(Base):
     def serialize(self):
         return {
             "id": self.Id,
-            "totalTime": self.TotalTime,
             "startTime": self.StartTime,
+            "totalTime": self.EndTime,
             "result": self.Result,
             "level_id": self.Level_id,
             "game1_id": self.Game1_id,

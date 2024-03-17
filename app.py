@@ -3,6 +3,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os, random
+from datetime import datetime
 from openai import OpenAI
 
 from my_lib.general import crud_template, is_none
@@ -110,7 +111,8 @@ def history(user_id):
     return jsonify({
         "history": history
     }), 200
-    
+
+
 @app.route(URI + 'queue/<int:user_id>', methods=['POST'])
 @jwt_required()
 def queue(user_id):
@@ -225,47 +227,67 @@ def has_match(user_id):
         }), 200
 
 
-# @app.route('/gameover/<int:_id>', methods=['GET', 'POST'])
-# @crud_template(request, ['Prestige', 'Coins', 'Victory'])
-# def juegoterminado(_id):
+@app.route('/game-over/<int:clash_id>', methods=['PUT'])
+@crud_template(request, optional_fields=['game_id'])
+@jwt_required()
+def game_over(clash_id):
+    clash: Clash = database.read_by_id('clash', clash_id)
 
-#     newPrestige = request.json['Prestige']
-#     newCoins = request.json['Coins']
-#     isVictory = request.json['Victory']
+    if is_none(clash):
+        return jsonify({
+            "message": "Clash not found"
+        }), 404
 
-#     ClaseDB.JuegoTerminado(_id, newPrestige, newCoins, isVictory)
+    if clash.Game1_id == request.json['game_id']:
+        database.update_table_row('clash', clash_id, {
+            'EndTime': datetime.now(),
+            'Result': False
+        })
 
-#     user = ClaseDB.GetUser(_id)
+    elif clash.Game2_id == request.json['game_id']:
+        database.update_table_row('clash', clash_id, {
+            'EndTime': datetime.now(),
+            'Result': True
+        })
 
-#     created = database.crate_table_row('user', user)
-
-#     if created:
-#         return jsonify({
-#             "message": "Agregado correctamente"
-#         }), 200
+    else:
+        return jsonify({
+            "message": "Invalid game"
+        }), 400
     
-#     return jsonify({
-#         "message": "No se creo la cuenta"
-#     }), 501
+    return jsonify({
+        "message": "Game ended successfully"
+    }), 200
 
 
-# @app.route(URI + 'gameover/<int:_id>', methods=['GET', 'POST'])
-# @crud_template(request, ['Prestige', 'Coins', 'Victory'])
-# def juegoterminado(_id):
+@app.route('/should_continue/<int:clash_id>/<int:game_id>', methods=['GET', 'PUT'])
+@crud_template(request, optional_fields=[])
+@jwt_required()
+def should_continue(clash_id, game_id):
+    clash: Clash = database.read_by_id('clash', clash_id)
 
-#     newPrestige = request.json['Prestige']
-#     newCoins = request.json['Coins']
-#     isVictory = request.json['Victory']
+    if is_none(clash):
+        return jsonify({
+            "message": "Clash not found"
+        }), 404
 
-#     ClaseDB.JuegoTerminado(_id, newPrestige, newCoins, isVictory)
+    if clash.Game1_id == game_id:
+        game2 = database.read_by_id('games', clash.Game2_id)
 
-#     user = ClaseDB.GetUser(_id)
+    elif clash.Game2_id == game_id:
+        database.update_table_row('clash', clash_id, {
+            'EndTime': datetime.now(),
+            'Result': True
+        })
 
-#     return jsonify({
-#         "message": "Listo",
-#         "user": user
-#     }), 200
-
+    else:
+        return jsonify({
+            "message": "Invalid game"
+        }), 400
+    
+    return jsonify({
+        "message": "Game ended successfully"
+    }), 200
 
 @app.route(URI + 'shortcut', methods=['GET'])
 @app.route(URI + 'shortcut/<int:game_id>', methods=['POST', 'GET'])
@@ -413,9 +435,9 @@ def lesson(_idUser):
 
 
 @app.route(URI + 'levels', methods=['GET'])
-@app.rpute(URI + 'levels/<int_idLevel>', methods=['GET'])
+@app.route(URI + 'levels/<int:idLevel>', methods=['GET'])
 @jwt_required()
-def getLevel(_idLevel=None):
+def getLevel(_idLevel = None):
 
     levels = None
 
@@ -441,6 +463,36 @@ def getLevel(_idLevel=None):
         "message": "ERROR"
     }), 400
 
+
+@app.route(URI + 'me/<int:user_id>', methods=['GET', 'PUT', 'DELETE'])
+@crud_template(request, optional_fields=["FirstName", "LastName", "Age", "Username"])
+@jwt_required()
+def me(user_id):
+    user: User = database.read_by_id('user')
+
+    if is_none(user):
+        return jsonify({
+            "message": "User not found"
+        }), 404
+    
+    if request.method == "GET":
+        return jsonify({
+            "user": user.serialize()
+        }), 200
+    
+    elif request.method == "PUT":
+        database.update_table_row('user', user_id, request.json)
+        
+        return jsonify({
+            "message": "Info Updated"
+        }), 200
+    
+    elif request.method == "DELETE":
+        database.delete_table_row('user', user_id)
+        
+        return jsonify({
+            "message": "Your were deleted"
+        }), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
