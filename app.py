@@ -171,7 +171,7 @@ def queue(user_id):
         return jsonify({
             "message": "Match Found",
             "questions": [question.serialize() for question in questions],
-            "clash": clash.serialize(),
+            "match": clash.serialize(),
             "game": game_player1.serialize()
         }), 201
     
@@ -224,24 +224,24 @@ def has_match(user_id):
         clash_questions: list[Clash_Question] = database.read_all_table('clash_questions')
         clash_questions = [question for question in clash_questions if question.Clash_Id == match.Id]
 
+        questions = []
+        for question in clash_questions:
+            q = database.read_by_id('questions', question.Question_Id)
+            questions.append(q)
+
         return jsonify({
             "message": "Match Found",
             "game": game.serialize(),
             "match": match.serialize(),
-            "questions": [question.serialize() for question in clash_questions]
+            "questions": [question.serialize() for question in questions]
         }), 200
 
 
-@app.route('/game-over/<int:clash_id>', methods=['PUT'])
+@app.route(URI + '/game_over/<int:clash_id>', methods=['PUT'])
 @crud_template(request, optional_fields=['game_id'])
-@jwt_required()
+# @jwt_required()
 def game_over(clash_id):
     clash: Clash = database.read_by_id('clash', clash_id)
-
-    if is_none(clash):
-        return jsonify({
-            "message": "Clash not found"
-        }), 404
 
     if clash.Game1_id == request.json['game_id']:
         database.update_table_row('clash', clash_id, {
@@ -265,7 +265,7 @@ def game_over(clash_id):
     }), 200
 
 
-@app.route('/should_continue/<int:clash_id>/<int:game_id>', methods=['GET'])
+@app.route(URI + '/should_continue/<int:clash_id>/<int:game_id>', methods=['GET'])
 @jwt_required()
 def should_continue(clash_id, game_id):
     clash: Clash = database.read_by_id('clash', clash_id)
@@ -421,10 +421,10 @@ def answer(_idGame, _idQuestion):
         )
 
         g_q = {
-            "Answer": answer,
+            "Answer": str(answer),
             "Time": time,
             "Result": True if "verdadero" in completion.choices[0].message.content.lower() else False,
-            "Question": question.Question,
+            "Question": question.Id,
             "Game_id": _idGame
         }
 
@@ -500,7 +500,7 @@ def getLevel(_idLevel = None):
 @crud_template(request, optional_fields=["FirstName", "LastName", "Age", "Username", "Streak", "Coins", "Prestige"])
 @jwt_required()
 def me(user_id):
-    user: User = database.read_by_id('user')
+    user: User = database.read_by_id('user', user_id)
 
     if is_none(user):
         return jsonify({
