@@ -10,8 +10,8 @@ class Clash(Base):
     EndTime = Column(TIMESTAMP(), nullable=True)
     Result = Column(Boolean(), nullable=True)
     Level_id = Column(ForeignKey('levels.Id'))
-    Game1_id = Column(ForeignKey('users.Id'))
-    Game2_id = Column(ForeignKey('users.Id'))
+    Game1_id = Column(ForeignKey('games.Id'))
+    Game2_id = Column(ForeignKey('games.Id'))
 
     def serialize(self):
         return {

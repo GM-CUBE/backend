@@ -44,9 +44,12 @@ def signup():
     )
 
     if created:
+        token = create_access_token(identity=register.Username)
+
         return jsonify({
             "message": "Created Successfully",
-            "user": register.serialize()
+            "user": register.serialize(),
+            "token": token
         }), 201
     
     return jsonify({
@@ -129,7 +132,7 @@ def queue(user_id):
     match = None
 
     for queue in queues:
-        if queue.Prestige >= user.Prestige - 20 and queue.Prestige <= user.Prestige + 20:
+        if queue.Prestige >= user.Prestige - 20 and queue.Prestige <= user.Prestige + 20 and queue.IdUser != user.Id:
             match = queue
             break
 
@@ -168,7 +171,8 @@ def queue(user_id):
         return jsonify({
             "message": "Match Found",
             "questions": [question.serialize() for question in questions],
-            "clash": clash.serialize()
+            "clash": clash.serialize(),
+            "game": game_player1.serialize()
         }), 201
     
     else:
@@ -221,6 +225,7 @@ def has_match(user_id):
         clash_questions = [question for question in clash_questions if question.Clash_Id == match.Id]
 
         return jsonify({
+            "message": "Match Found",
             "game": game.serialize(),
             "match": match.serialize(),
             "questions": [question.serialize() for question in clash_questions]
