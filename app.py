@@ -445,13 +445,14 @@ def lesson(_idUser):
         
         if not is_none(level):
 
-            lessons: list[Paragraph] = database.read_all_table('paragraphs')
+            lessons: list[Paragraph] = database.read_all_table('paragraph')
+            print(lessons)
 
             paragraphs = [p for p in lessons if p.Level_id <= level.Id]
             
-            examples: list[Example] = database.read_all_table('examples')
+            examples_list: list[Example] = database.read_all_table('example')
 
-            examples = [e for e in examples if e.Level_id <= level.Id]
+            examples = [e for e in examples_list if e.Level_id <= level.Id]
 
             return jsonify({
                 "paragraph": [p.serialize() for p in paragraphs],

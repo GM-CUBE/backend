@@ -6,7 +6,7 @@ class Example(Base):
     __tablename__ = 'examples'
 
     Id = Column(Integer(), primary_key=True)
-    Information = Column(String(120), nullable=False)
+    Information = Column(String(200), nullable=False)
     Level_id = Column(ForeignKey('levels.Id'))
 
     def serialize(self):

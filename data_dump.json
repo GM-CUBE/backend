@@ -105,5 +105,29 @@
             "Name": "Decrease Opponent Time",
             "Weighing": 0.2
         }
+    ],
+    "paragraphs": [
+        {
+            "Id": 1,
+            "Information": "The first program that is usually made in any programming language is 'Hello, world!'. Open your text editor and type the following: ",
+            "Level_id": 1
+        },
+        {
+            "Id": 2,
+            "Information": "In Python, you can store data in variables. Here are some examples of basic data types in Python: ",
+            "Level_id": 1
+        }
+    ],
+    "examples": [
+        {
+            "Id": 1,
+            "Information": "print('Hello, world!')",
+            "Level_id": 1
+        },
+        {
+            "Id": 2,
+            "Information": "integer = 10 ",
+            "Level_id": 1
+        }
     ]
 }
