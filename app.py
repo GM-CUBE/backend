@@ -260,8 +260,7 @@ def game_over(clash_id):
     }), 200
 
 
-@app.route('/should_continue/<int:clash_id>/<int:game_id>', methods=['GET', 'PUT'])
-@crud_template(request, optional_fields=[])
+@app.route('/should_continue/<int:clash_id>/<int:game_id>', methods=['GET'])
 @jwt_required()
 def should_continue(clash_id, game_id):
     clash: Clash = database.read_by_id('clash', clash_id)
@@ -271,23 +270,66 @@ def should_continue(clash_id, game_id):
             "message": "Clash not found"
         }), 404
 
+    opponent_game_id = ''
+
     if clash.Game1_id == game_id:
-        game2 = database.read_by_id('games', clash.Game2_id)
+        opponent_game_id = clash.Game2_id
 
     elif clash.Game2_id == game_id:
-        database.update_table_row('clash', clash_id, {
-            'EndTime': datetime.now(),
-            'Result': True
-        })
+        opponent_game_id = clash.Game1_id
 
     else:
         return jsonify({
             "message": "Invalid game"
         }), 400
     
-    return jsonify({
-        "message": "Game ended successfully"
-    }), 200
+    opponent_game: Games = database.read_by_id('games', opponent_game_id)
+
+    game_questions: list[Game_Question] = database.read_all_table('game_question')
+
+    opponent_questions = [game_quest for game_quest in game_questions if game_quest.Game_id == opponent_game.Id]
+
+    my_questions = [game_quest for game_quest in game_questions if game_quest.Game_id == game_id]
+
+    if len(my_questions) > len(opponent_questions):
+        return jsonify({
+            "state": 1,
+            "message": "Waiting for opponent"
+        }), 200
+
+    else:
+        has_wrong = len([game_quest for game_quest in opponent_questions if game_quest.Result == False]) != 0
+
+        if has_wrong:
+            return jsonify({
+                "state": 2,
+                "message": "You Won"
+            }), 200
+        else:  
+            if len(my_questions) == 5:
+                my_time, opponent_time = 0
+
+                for i in range(len(my_questions)):
+                    my_time += my_questions[i].Time
+                    opponent_time += opponent_questions[i].Time
+
+                if my_time < opponent_time:
+                    return jsonify({
+                        "state": 2,
+                        "message": "You Won"
+                    }), 200
+                else:    
+                    return jsonify({
+                        "state": 3,
+                        "message": "You Lost"
+                    }), 200
+
+            else:
+                return jsonify({
+                    "state": 0,
+                    "message": "Must Continue"
+                }), 200
+
 
 @app.route(URI + 'shortcut', methods=['GET'])
 @app.route(URI + 'shortcut/<int:game_id>', methods=['POST', 'GET'])
