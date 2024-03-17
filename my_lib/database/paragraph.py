@@ -5,7 +5,7 @@ class Paragraph(Base):
      __tablename__ = 'paragraphs'
 
      Id = Column(Integer(), primary_key=True)
-     Information = Column(String(100), nullable=False) 
+     Information = Column(String(200), nullable=False) 
      Level_id = Column(ForeignKey('levels.Id'))
 
      def serialize(self):

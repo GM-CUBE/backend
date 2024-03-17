@@ -72,9 +72,16 @@ class DB_interface:
                
                for level in data["levels"]:
                     self.session.add(Level(**level))
+               self.session.commit()
 
                for shortcut in data["shortcuts"]:
                     self.session.add(Shortcuts(**shortcut))
+
+               for paragraph in data["paragraphs"]:
+                    self.session.add(Paragraph(**paragraph))
+               
+               for example in data["examples"]:
+                    self.session.add(Example(**example))
 
                self.session.commit()
 
