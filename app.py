@@ -373,6 +373,12 @@ def shortcut(game_id=None):
                 "message": "Unexistent Data" 
             }), 404
         
+        user: User = database.read_by_id('user', game.User_id)
+
+        database.update_table_row('user', user.Id, {
+            "Coins": user.Coins - shortcut.Price
+        })
+        
         _, register = database.crate_table_row('shortcut_game', {
             "IdShortcut": shortcut.Id,
             "Game_id": game.Id
@@ -392,55 +398,46 @@ def answer(_idGame, _idQuestion):
     time = request.json['Time']
     answer = request.json['Answer']
     
-    questions: list[Questions] = database.read_all_table('questions')
-
-    _question = None
-
-    for question in questions:
-        if question.Id == _idQuestion:
-            _question = question
-            break
+    question: Questions = database.read_by_id('questions', _idQuestion)
     
-    if not is_none(_question):
-        text =f"Solo dime 'verdadero' o 'falso', sin explicaciones, si la respuesta es correcta. \nEjercicio: {_question.Question}\nRespuesta: {answer}"
+    if not is_none(question):
+        text =f"Solo dime 'verdadero' o 'falso', sin explicaciones, si la respuesta es correcta. \nEjercicio: {question.Question}\nRespuesta: {answer}"
         
-    client = OpenAI(
-        api_key=os.getenv('OPENAI_TOKEN')
-    )
+        client = OpenAI(
+            api_key=os.getenv('OPENAI_TOKEN')
+        )
 
-    completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "Eres un sistema de validación de códigos de python y solo puedes responder 'verdadero' si la respuesta a los ejercicios es correcta o 'falso' si no es correcta."},
-            {"role": "user", "content": text}
-        ]
-    )
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Eres un sistema de validación de códigos de python y solo puedes responder 'verdadero' si la respuesta a los ejercicios es correcta o 'falso' si no es correcta."},
+                {"role": "user", "content": text}
+            ]
+        )
 
-    g_q = {
-        "Answer": answer,
-        "Time": time,
-        "Result": True if completion.choices[0].message.content.lowe() == "verdadero" else False,
-        "Question": _question.Question,
-        "Game_id": _idGame
-    }
+        g_q = {
+            "Answer": answer,
+            "Time": time,
+            "Result": True if "verdadero" in completion.choices[0].message.content.lower() else False,
+            "Question": question.Question,
+            "Game_id": _idGame
+        }
 
-    database.crate_table_row('game_question', g_q)
+        _, register = database.crate_table_row('game_question', g_q)
+
+        return jsonify({
+            "respuesta": register.Result
+        }), 200
 
     return jsonify({
-        "respuesta": completion.choices[0].message.content
-    })
+        "message": "Unexistent Data"
+    }), 404
 
 
 @app.route(URI + 'lesson/<int:_idUser>', methods=['GET'])
 @jwt_required()
 def lesson(_idUser):
-
-    users: list[User] = database.read_all_table('users')
-
-    user = None
-    for u in users:
-        if u.Id == _idUser:
-            user = u
+    user: User = database.read_by_id('user', _idUser)
 
     if not is_none(user):
 
@@ -450,30 +447,20 @@ def lesson(_idUser):
 
             lessons: list[Paragraph] = database.read_all_table('paragraphs')
 
-            paragraph = ""
-            for lesson in lessons:
-                if lesson.Level_id == level.Id:
-                    paragraph = lesson.Information
-                    break
+            paragraphs = [p for p in lessons if p.Level_id == level.Id]
             
             examples: list[Example] = database.read_all_table('examples')
 
-            example = ""
-            for e in examples:
-                if e.Level_id == level.Id:
-                    example = e.Information
-                    break
+            examples = [e for e in examples if e.Level_id == level.Id]
 
-            if paragraph != "" and example != "":
+            return jsonify({
+                "paragraph": [p.serialize() for p in paragraphs],
+                "example": [e.serialize() for e in examples]
+            }), 200
 
-                return jsonify({
-                    "paragraph": paragraph.serialize(),
-                    "example": example.serialize()
-                }), 200
-    
     return jsonify({
-        "message": "ERROR"
-    }), 400
+        "message": "Unexistent Data"
+    }), 404
 
 
 @app.route(URI + 'levels', methods=['GET'])
@@ -485,16 +472,14 @@ def getLevel(_idLevel = None):
 
     if is_none(_idLevel):
 
-        levels: list[Level] = database.read_all_table('levels')
+        levels: list[Level] = database.read_all_table('level')
 
-        if len(levels) > 0:
-            return jsonify({
-                "levels": [level.serialize() for level in levels]
-            }), 200
+        return jsonify({
+            "levels": [level.serialize() for level in levels]
+        }), 200
 
     else:
-
-        level = database.read_by_id(_idLevel)
+        level: Level = database.read_by_id(_idLevel)
 
         if not is_none(level):
             return jsonify({
@@ -502,12 +487,12 @@ def getLevel(_idLevel = None):
             }), 200
         
     return jsonify({
-        "message": "ERROR"
-    }), 400
+        "message": "DATA NOT FOUND"
+    }), 404
 
 
 @app.route(URI + 'me/<int:user_id>', methods=['GET', 'PUT', 'DELETE'])
-@crud_template(request, optional_fields=["FirstName", "LastName", "Age", "Username"])
+@crud_template(request, optional_fields=["FirstName", "LastName", "Age", "Username", "Streak", "Coins", "Prestige"])
 @jwt_required()
 def me(user_id):
     user: User = database.read_by_id('user')
