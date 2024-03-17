@@ -53,31 +53,37 @@
     ],
     "levels": [
         {
+            "Id": 1,
             "Name": "Bronce",
             "MinimumPrestige": 0,
             "MaximumPrestige": 100
         },
         {
+            "Id": 2,
             "Name": "Plata",
             "MinimumPrestige": 101,
             "MaximumPrestige": 200
         },
         {
+            "Id": 3,
             "Name": "Oro",
             "MinimumPrestige": 201,
             "MaximumPrestige": 300
         },
         {
+            "Id": 4,
             "Name": "Platino",
             "MinimumPrestige": 301,
             "MaximumPrestige": 400
         },
         {
+            "Id": 5,
             "Name": "Diamante",
             "MinimumPrestige": 401,
             "MaximumPrestige": 500
         },
         {
+            "Id": 6,
             "Name": "Maestro",
             "MinimumPrestige": 501,
             "MaximumPrestige": 600

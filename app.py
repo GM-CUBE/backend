@@ -447,11 +447,11 @@ def lesson(_idUser):
 
             lessons: list[Paragraph] = database.read_all_table('paragraphs')
 
-            paragraphs = [p for p in lessons if p.Level_id == level.Id]
+            paragraphs = [p for p in lessons if p.Level_id <= level.Id]
             
             examples: list[Example] = database.read_all_table('examples')
 
-            examples = [e for e in examples if e.Level_id == level.Id]
+            examples = [e for e in examples if e.Level_id <= level.Id]
 
             return jsonify({
                 "paragraph": [p.serialize() for p in paragraphs],

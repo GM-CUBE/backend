@@ -67,7 +67,6 @@ class DB_interface:
                with open('data_dump.json', 'r') as f:
                     data = json.load(f)
 
-                    # Itera sobre cada ejercicio
                for question in data["questions"]:
                     self.session.add(Questions(**question))
                
