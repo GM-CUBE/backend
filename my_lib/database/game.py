@@ -5,8 +5,8 @@ class Games(Base):
     __tablename__ = 'games'
 
     Id = Column(Integer(), primary_key=True)
-    Amount = Column(Integer(), nullable=False)
-    Mistakes = Column(Integer(), nullable=False)
+    Amount = Column(Integer(), default=0)
+    Mistakes = Column(Integer(), default=0)
     User_id = Column(ForeignKey("users.Id"))
 
     def serialize(self):
@@ -14,5 +14,5 @@ class Games(Base):
             "id": self.Id,
             "amount": self.Amount,
             "mistakes": self.Mistakes,
-            "User_id": self.User_id
+            "user_id": self.User_id
         }

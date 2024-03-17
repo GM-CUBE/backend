@@ -1,13 +1,14 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, TIMESTAMP, Boolean
+from datetime import datetime
 from .base import Base
 
 class Clash(Base):
     __tablename__ = 'clashes'
 
     Id = Column(Integer, primary_key=True)
-    TotalTime = Column(Integer, nullable=False)
-    StartTime = Column(Integer, nullable=False)
-    Result = Column(String(50), nullable=False)
+    TotalTime = Column(Integer(), nullable=True)
+    StartTime = Column(TIMESTAMP(), default=datetime.now())
+    Result = Column(Boolean(), nullable=True)
     Level_id = Column(ForeignKey('levels.Id'))
     Game1_id = Column(ForeignKey('users.Id'))
     Game2_id = Column(ForeignKey('users.Id'))

@@ -1,4 +1,3 @@
-from .activity import Activity
 from .clash import Clash
 from .example import Example
 from .game_question import Game_Question
@@ -9,5 +8,6 @@ from .shortcut_game import Shortcut_Game
 from .shortcut import Shortcuts
 from .user import User
 from .level import Level
+from .queue import Queue
 
 from .crud import DB_interface

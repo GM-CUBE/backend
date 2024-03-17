@@ -2,11 +2,11 @@ from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from flask_cors import CORS
 from dotenv import load_dotenv
-import os, re
+import os, re, random
 from hashlib import md5
 
 from my_lib.general import crud_template, is_none
-from my_lib.database import DB_interface
+from my_lib.database import DB_interface, Queue, User, Games, Questions
 
 # -----------------------------------------------------------------------------
 
@@ -19,49 +19,53 @@ database = DB_interface()
 
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
-URI = os.getenv('URI')
+URI = '/api/v1/'
 
 # -----------------------------------------------------------------------------
 
 @app.route(URI + 'signup', methods=['POST'])
-@crud_template(request, ['FirstName', 'LastName', 'Age', 'Username', 'Password'])
+@crud_template(request, ['firstName', 'lastName', 'age', 'username', 'password'])
 def signup():
+    if database.exist_user(request.json['username']):
+        return jsonify({
+            "message": "User already exist"
+        }), 302
 
-    user = {
-        'FirstName': request.json['FirstName'] ,
-        'LastName': request.json['LastName'], 
-        'Age': request.json['Age'], 
-        'Username': request.json['Username'],
-        'Password': request.json['Password'], 
-    }
-
-    created = database.crate_table_row('user', user)
+    created, register = database.crate_table_row(
+        'user', 
+        {
+            'FirstName': request.json['firstName'] ,
+            'LastName': request.json['lastName'], 
+            'Age': request.json['age'], 
+            'Username': request.json['username'],
+            'Password': request.json['password'], 
+        }
+    )
 
     if created:
         return jsonify({
-            "message": "Agregado correctamente"
-        }), 200
+            "message": "Created Successfully",
+            "user": register.serialize()
+        }), 201
     
     return jsonify({
-        "message": "No se creo la cuenta"
+        "message": "Error while creating"
     }), 501
 
-
-@app.route('/login', methods=['POST'])
+@app.route(URI + 'login', methods=['POST'])
 @crud_template(request, ['username', 'password'])
 def login():
+    username = request.json['username']
+    password = request.json['password']
 
-    username = request.json['Username']
-    password = request.json['Password']
-
-    success, user = DB_interface.try_login(username, password)
-
-    token = create_access_token(identity=username)
+    success, user = database.try_login(username, password)
 
     if success:
+        token = create_access_token(identity=username)
+        
         return jsonify({
-            "message": "Correct",
-            "user": user,
+            "message": "Login Successfully",
+            "user": user.serialize(),
             "token": token
         }), 200
         
@@ -71,53 +75,121 @@ def login():
         }), 401
 
 
-@app.route('/gameover/<int:_id>', methods=['GET', 'POST'])
-@crud_template(request, ['Prestige', 'Coins', 'Victory'])
-def juegoterminado(_id):
+@app.route(URI + 'queue/<int:user_id>', methods=['POST'])
+def queue(user_id):
+    
+    user: User = database.read_by_id('user', user_id)
 
-    newPrestige = request.json['Prestige']
-    newCoins = request.json['Coins']
-    isVictory = request.json['Victory']
-
-    ClaseDB.JuegoTerminado(_id, newPrestige, newCoins, isVictory)
-
-    user = ClaseDB.GetUser(_id)
-
-    created = database.crate_table_row('user', user)
-
-    if created:
+    if is_none(user):
         return jsonify({
-            "message": "Agregado correctamente"
+            "message": "User Not Found",
+        }), 404
+
+    queues: list[Queue] = database.read_all_table('queue')
+    
+    match = None
+
+    for queue in queues:
+        if queue.Prestige >= user.Prestige - 20 and queue.Prestige <= user.Prestige + 20:
+            match = queue
+            break
+
+    if match != None:
+
+        game_player1: Games = database.crate_table_row('games', {
+            'User_id': user.Id
+        })
+
+        game_player2: Games = database.crate_table_row('games', {
+            'User_id': match.IdUser
+        })
+
+        database.delete_table_row('queue', match.Id)
+
+        level = database.read_level(min(user.Prestige, match.Prestige))
+
+        questions: list[Questions] = database.read_all_table('questions')
+
+        questions = [question for question in questions if question.Level_id == level.Id]
+
+        # questions = random.sample(questions, 5)
+
+        return jsonify({
+            "message": "Match Found",
+            "min": level.serialize(),
+            "questions": [question.serialize() for question in questions]
+        }), 201
+    
+    else:
+        database.crate_table_row('queue', {
+            "IdUser": user.Id,
+            "Prestige": user.Prestige
+        })
+
+        queues: list[Queue] = database.read_all_table('queue')
+
+        return jsonify({
+            "message": "Waiting...",
+            "queue": [queue.serialize() for queue in queues]
+        }), 201
+
+
+
+@app.route(URI + 'has_match/<int:user_id>', methods=['GET'])
+def has_match(user_id):
+    user: User = database.read_by_id('user', user_id)
+
+    if is_none(user):
+        return jsonify({
+            "message": "User Not Found",
+        }), 404
+
+    queues: list[Queue] = database.read_all_table('queue')
+    
+    inQueue = False
+
+    for queue in queues:
+        if queue.IdUser == user.Id:
+            inQueue = True
+            break
+
+    if inQueue:
+        return jsonify({
+            "message": "Waiting..."
         }), 200
     
-    return jsonify({
-        "message": "No se creo la cuenta"
-    }), 501
+    else:
+        games: list[Games] = database.read_all_table('games')
+
+        game = [game for game in games if game.User_id == user.Id and game.Amount == 0][0]
+
+        return jsonify({
+            "game": game.serialize()
+        }), 200
 
 
-# @app.route(URI + 'login', methods=['GET', 'POST'])
-# @crud_template(request, ['username', 'password'])
-# def login():
+# @app.route('/gameover/<int:_id>', methods=['GET', 'POST'])
+# @crud_template(request, ['Prestige', 'Coins', 'Victory'])
+# def juegoterminado(_id):
 
-#     username = request.json['Username']
-#     password = request.json['Password']
+#     newPrestige = request.json['Prestige']
+#     newCoins = request.json['Coins']
+#     isVictory = request.json['Victory']
 
-#     user = ClaseDB.SearchUser(username, password)
-#     #todo JWT
+#     ClaseDB.JuegoTerminado(_id, newPrestige, newCoins, isVictory)
 
-#     if user != None:
+#     user = ClaseDB.GetUser(_id)
 
+#     created = database.crate_table_row('user', user)
+
+#     if created:
 #         return jsonify({
-#             "message": "Encontrado",
-#             "user": user
+#             "message": "Agregado correctamente"
 #         }), 200
     
-#     else:
-
-#         return jsonify({
-#             "message": "Datos incorrectos",
-#             "user": None
-#         }), 401
+#     return jsonify({
+#         "message": "No se creo la cuenta"
+#     }), 501
 
 
 # @app.route(URI + 'gameover/<int:_id>', methods=['GET', 'POST'])
@@ -178,50 +250,6 @@ def juegoterminado(_id):
 #         isCorrect = False
 
 #     ClaseDB.AddAnswer(_idQuestion, _idGame, time, answer, isCorrect)
-
-
-# @app.route(URI + 'queue/<int:_id>', methods=['GET'])
-# def queue(_id):
-    
-#     user = ClaseDB.SearchUser(_id)
-#     found = ClaseDB.SearchQueue(user['Prestigio'])
-
-#     if found != None:
-
-#         ClaseDB.DeleteQueue(found['Id'])
-
-#         #! CLASH
-#         nivel = ClaseDB.GetLevel(prestigio1, prestigio2)
-#         actividad = ClaseDB.GenerateActivity(nivel)
-#         preguntas = actividad['Preguntas']
-#         respuestas = actividad['Respuestas']
-    
-#     else:
-#         ClaseDB.AddQueue(_id, user['Prestigio'])
-
-# @app.route(URI + 'hasmatch/<int:_id>', methods=['GET'])
-# def hasmatch(_id):
-
-#     inQueue = ClaseDB.InQueue(_id)
-
-#     if inQueue:
-#         return jsonify({
-#             "message": "Waiting"
-#         }), 200
-    
-#     else:
-#         partida = ClaseDB.FindGame(_id)
-
-#         if partida:
-
-#             return jsonify({
-#                 "partida": partida
-#             }), 200
-        
-#         else:
-#             return jsonify({
-#                 "message": "Juego cancelado"
-#             }), 400
 
 
 if __name__ == '__main__':

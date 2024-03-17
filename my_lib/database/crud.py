@@ -1,10 +1,8 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import os
 
-from .activity import Activity
 from .clash import Clash
 from .example import Example
 from .game_question import Game_Question
@@ -15,11 +13,11 @@ from .shortcut_game import Shortcut_Game
 from .shortcut import Shortcuts
 from .user import User
 from .level import Level
+from .queue import Queue
 
 from .base import Base
 
 TABLE_CLASS_MAP = {
-     'activity': Activity,
      'clash': Clash,
      'example': Example,
      'game_question': Game_Question,
@@ -29,7 +27,8 @@ TABLE_CLASS_MAP = {
      'questions': Questions,
      'shortcut_game': Shortcut_Game,
      'shortcuts': Shortcuts,
-     'user': User
+     'user': User,
+     'queue': Queue
 }
 
 class DB_interface:
@@ -59,39 +58,28 @@ class DB_interface:
 
           Base.metadata.create_all(self.engine)
 
-
      # --- Create -----------
      def crate_table_row(self, table_name, row_info):
           table_class = TABLE_CLASS_MAP.get(table_name.lower())
 
           if table_class:
                row = table_class(**row_info)
-               print(row)
                self.session.add(row)
                self.session.commit()
 
-               return True
+               return True, row
 
-          else:
-               print(f"No se encontró una clase correspondiente a la tabla {table_name}")
-
-          
-          return False
-          
-
+          return False, None
+     
 
      # --- Read -------------
      def read_all_table(self, table_name):
           table_class = TABLE_CLASS_MAP.get(table_name.lower())
 
           if table_class:
-               result = []
                data = self.session.query(table_class).all()
-               for i in data:
-                    result.append(i.serialize())
 
-               return result
-
+               return data if len(data) > 0 else []
 
 
      def read_by_id(self, table_name, id):
@@ -99,8 +87,17 @@ class DB_interface:
 
           if table_class:
                data = self.session.query(table_class).filter(table_class.Id == id).first()
-               return data.serialize()
+               return data
+     
 
+     def read_level(self, prestige):
+          data = self.session.query(Level).filter(
+               Level.MinimumPrestige <= prestige
+          ).filter(
+               Level.MaximumPrestige >= prestige
+          ).first()
+
+          return data     
 
 
      # --- Update -----------
@@ -114,6 +111,8 @@ class DB_interface:
                     setattr(data, key, value)
                self.session.commit()
 
+               return data
+
 
      # --- Delete -----------
      def delete_table_row(self, table_name, id):
@@ -124,15 +123,25 @@ class DB_interface:
                     data = self.session.query(table_class).filter(table_class.Id == id).first()
                     self.session.delete(data)
                     self.session.commit()
+               
+                    return True
+               
                except:
-                    print('Not found')
+                    return False
+
 
      def try_login(self, username, password) -> tuple[bool, User]:
           user = self.session.query(User).filter(User.Username == username).filter(User.Password == password).first()
 
           if user != None:
-               return True, user
+               return True, user.serialize()
           else:
-               return False, user
+               return False, user.serialize()
+
+
+     def exist_user(self, username) -> bool:
+          user = self.session.query(User).filter(User.Username == username).first()
+
+          return user != None
 
 # crate_Table('level', **{'Name': 'Bronce', 'MinimumPrestige': 0, 'MaximumPrestige': 100})

@@ -18,8 +18,9 @@ def validate(request: Request, fields: list[str]) -> str:
 def crud_template(request: Request, needed_fields: list[str] = [], optional_fields: list[str] = []):
     def decorador(func):
         
-        def wrapper(*args, **kwargs):
+        wrapper_name = f"{func.__name__}_wrapper"
 
+        def wrapper(*args, **kwargs):
             if request.method == 'POST' or request.method == 'PUT':
 
                 if not request.json:
@@ -35,6 +36,8 @@ def crud_template(request: Request, needed_fields: list[str] = [], optional_fiel
                 
             return func(*args, **kwargs)
         
+        wrapper.__name__ = wrapper_name
+
         return wrapper
     
     return decorador

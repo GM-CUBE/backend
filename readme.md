@@ -46,5 +46,6 @@ TABLE_CLASS_MAP = {
      'shortcut_game': Shortcut_Game,
      'shortcuts': Shortcuts,
      'user': Users
+     'queue': Queue
 }
 ```

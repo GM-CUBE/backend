@@ -7,3 +7,10 @@ class Queue(Base):
     Id = Column(Integer(), primary_key=True)
     IdUser = Column(Integer(), ForeignKey('users.Id'))
     Prestige = Column(Integer(), nullable=False)
+
+    def serialize(self):
+        return {
+            "Id": self.Id,
+            "IdUser": self.IdUser,
+            "Prestige": self.Prestige
+        }

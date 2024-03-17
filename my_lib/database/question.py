@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, ForeignKey, Integer, String, Float
 from .base import Base
 
 class Questions(Base):
@@ -8,11 +8,11 @@ class Questions(Base):
     Question = Column(String(100), nullable=False)
     Answer = Column(String(50), nullable=False)
     Time = Column(Float(), nullable=False)
+    Level_id = Column(Integer, ForeignKey('levels.Id'))
 
     def serialize(self):
         return {
             "id": self.Id,
-            "questions": self.Question,
-            "answer": self.Answer,
-            "time": self.Time
+            "question": self.Question,
+            "time": self.Time,
         }
