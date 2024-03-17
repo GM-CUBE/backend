@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import os
+import json
 
 from .clash import Clash
 from .example import Example
@@ -14,6 +15,7 @@ from .shortcut import Shortcuts
 from .user import User
 from .level import Level
 from .queue import Queue
+from .clash_question import Clash_Question
 
 from .base import Base
 
@@ -28,7 +30,8 @@ TABLE_CLASS_MAP = {
      'shortcut_game': Shortcut_Game,
      'shortcuts': Shortcuts,
      'user': User,
-     'queue': Queue
+     'queue': Queue,
+     'clash_questions': Clash_Question
 }
 
 class DB_interface:
@@ -57,6 +60,24 @@ class DB_interface:
           self.session = Session()
 
           Base.metadata.create_all(self.engine)
+
+          data = self.session.query(Questions).all()
+
+          if len(data) == 0:
+               with open('data_dump.json', 'r') as f:
+                    data = json.load(f)
+
+                    # Itera sobre cada ejercicio
+               for question in data["questions"]:
+                    self.session.add(Questions(**question))
+               
+               for level in data["levels"]:
+                    self.session.add(Level(**level))
+
+               for shortcut in data["shortcuts"]:
+                    self.session.add(Shortcuts(**shortcut))
+
+               self.session.commit()
 
      # --- Create -----------
      def crate_table_row(self, table_name, row_info):

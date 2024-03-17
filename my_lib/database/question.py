@@ -6,7 +6,6 @@ class Questions(Base):
 
     Id = Column(Integer(), primary_key=True)
     Question = Column(String(100), nullable=False)
-    Answer = Column(String(50), nullable=False)
     Time = Column(Float(), nullable=False)
     Level_id = Column(Integer, ForeignKey('levels.Id'))
 

@@ -1,0 +1,103 @@
+{
+    "questions": [
+        {
+            "Question": "Calculate the area of a rectangle.",
+            "Time": 1.5,
+            "Level_id": 1
+        },
+        {
+            "Question": "Convert Celsius to Fahrenheit.",
+            "Time": 2.0,
+            "Level_id": 1
+        },
+        {
+            "Question": "Generate a list of the first N prime numbers.",
+            "Time": 2.5,
+            "Level_id": 1
+        },
+        {
+            "Question": "Find the greatest common divisor (GCD) of two numbers.",
+            "Time": 2.0,
+            "Level_id": 1
+        },
+        {
+            "Question": "Reverse a string.",
+            "Time": 1.5,
+            "Level_id": 1
+        },
+        {
+            "Question": "Calculate the factorial of a number.",
+            "Time": 2.0,
+            "Level_id": 1
+        },
+        {
+            "Question": "Check if a string is a palindrome.",
+            "Time": 1.5,
+            "Level_id": 1
+        },
+        {
+            "Question": "Find the sum of digits of a number.",
+            "Time": 2.0,
+            "Level_id": 1
+        },
+        {
+            "Question": "Count the number of words in a string.",
+            "Time": 1.5,
+            "Level_id": 1
+        },
+        {
+            "Question": "Print the even numbers from 1 to N.",
+            "Time": 2.0,
+            "Level_id": 1
+        }
+    ],
+    "levels": [
+        {
+            "Name": "Bronce",
+            "MinimumPrestige": 0,
+            "MaximumPrestige": 100
+        },
+        {
+            "Name": "Plata",
+            "MinimumPrestige": 101,
+            "MaximumPrestige": 200
+        },
+        {
+            "Name": "Oro",
+            "MinimumPrestige": 201,
+            "MaximumPrestige": 300
+        },
+        {
+            "Name": "Platino",
+            "MinimumPrestige": 301,
+            "MaximumPrestige": 400
+        },
+        {
+            "Name": "Diamante",
+            "MinimumPrestige": 401,
+            "MaximumPrestige": 500
+        },
+        {
+            "Name": "Maestro",
+            "MinimumPrestige": 501,
+            "MaximumPrestige": 600
+        }
+    ],
+    "shortcuts": [
+        {
+            "Price": 200,
+            "Name": "Skip Question",
+            "Weighing": 0.2
+        },
+        {
+            "Price": 50,
+            "Name": "Increase Time",
+            "Weighing": 0.1
+        },
+        {
+            "Price": 100,
+            "Name": "Decrease Opponent Time",
+            "Weighing": 0.2
+        }
+    ]
+}

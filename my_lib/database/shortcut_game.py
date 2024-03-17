@@ -12,5 +12,5 @@ class Shortcut_Game(Base):
         return {
             "id": self.Id,
             "idShortcut": self.IdShortcut,
-            "Game_id": self.Game_id
+            "game_id": self.Game_id
         }

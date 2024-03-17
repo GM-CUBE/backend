@@ -6,7 +6,7 @@ class Shortcuts(Base):
 
     Id = Column(Integer(), primary_key=True)
     Price = Column(Integer())
-    Name = Column(String(20), nullable=False)
+    Name = Column(String(40), nullable=False)
     Weighing = Column(Float(), nullable=False)
 
     def serialize(self):
